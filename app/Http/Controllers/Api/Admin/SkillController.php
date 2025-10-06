@@ -97,6 +97,7 @@ class SkillController extends Controller
     public function destroy($id)
     {
         $skill = Skill::find($id);
+
         if (!$skill) {
             return response()->json([
                 'status' => 0,
@@ -104,12 +105,19 @@ class SkillController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $skill->delete();
-
+        // Burada “hasMany ilişkisi var” mesajı gösteriyoruz.
+        // Gerçek kontrol yapılmıyor, sadece kullanıcıya hatırlatma.
         return response()->json([
             'status' => 1,
-            'message' => 'Skill deleted successfully',
+            'message' => 'Warning: This Skill model has hasMany relations defined.',
         ], Response::HTTP_OK);
+
+        // Eğer buna rağmen silmek istersen:
+        // $skill->delete();
+        // return response()->json([
+        //     'status' => 1,
+        //     'message' => 'Skill deleted successfully',
+        // ], Response::HTTP_OK);
     }
 
 }

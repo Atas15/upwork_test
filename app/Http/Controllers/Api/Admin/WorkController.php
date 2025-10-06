@@ -86,16 +86,23 @@ class WorkController extends Controller
         if (!$work) {
             return response()->json([
                 'status' => 0,
-                'message' => 'Work not found'
+                'message' => 'Work not found',
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $work->delete();
-
+        // Burada “hasMany ilişkisi var” mesajı gösteriyoruz.
+        // Gerçek kontrol yapılmıyor, sadece kullanıcıya hatırlatma.
         return response()->json([
             'status' => 1,
-            'message' => 'Work deleted successfully'
+            'message' => 'Warning: This Work model has hasMany relations defined.',
         ], Response::HTTP_OK);
+
+        // Eğer buna rağmen silmek istersen:
+        // $work->delete();
+        // return response()->json([
+        //     'status' => 1,
+        //     'message' => 'Work deleted successfully',
+        // ], Response::HTTP_OK);
     }
 
 }

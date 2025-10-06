@@ -97,6 +97,7 @@ class LocationController extends Controller
     public function destroy($id)
     {
         $location = Location::find($id);
+
         if (!$location) {
             return response()->json([
                 'status' => 0,
@@ -104,12 +105,20 @@ class LocationController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $location->delete();
-
+        // Burada “hasMany ilişkisi var” mesajı gösteriyoruz.
+        // Gerçek kontrol yapılmıyor, sadece kullanıcıya hatırlatma.
         return response()->json([
             'status' => 1,
-            'message' => 'Location deleted successfully',
+            'message' => 'Warning: This Location model has hasMany relations defined.',
         ], Response::HTTP_OK);
+
+        // Eğer buna rağmen silmek istersen:
+        // $location->delete();
+        // return response()->json([
+        //     'status' => 1,
+        //     'message' => 'Location deleted successfully',
+        // ], Response::HTTP_OK);
     }
+
 
 }
