@@ -1,0 +1,115 @@
+<?php
+
+namespace App\Http\Controllers\Api\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Skill;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class SkillController extends Controller
+{
+    public function index()
+    {
+        return response()->json([
+            'status' => 1,
+            'data' => [
+                'skills' => Skill::get(),
+            ],
+        ], Response::HTTP_OK);
+    }
+
+    public function create(Request $request)
+    {
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $exists = Skill::whereRaw('LOWER(name) = ?', [strtolower($validated['name'])])->first();
+
+        if ($exists) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'This skill already exists',
+                'data' => [
+                    'id' => $exists->id,
+                    'name' => $exists->name,
+                ],
+            ], Response::HTTP_CONFLICT);
+        }
+
+        $skill = Skill::create($validated);
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Skill created successfully',
+            'data' => [
+                'id' => $skill->id,
+                'name' => $skill->name,
+            ],
+        ], Response::HTTP_CREATED);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $skill = Skill::find($id);
+        if (!$skill) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Skill not found',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $exists = Skill::whereRaw('LOWER(name) = ?', [strtolower($validated['name'])])
+            ->where('id', '!=', $id)
+            ->first();
+
+        if ($exists) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'This skill name already exists',
+                'data' => [
+                    'id' => $exists->id,
+                    'name' => $exists->name,
+                ],
+            ], Response::HTTP_CONFLICT);
+        }
+
+        $skill->update([
+            'name' => ucfirst(strtolower($validated['name'])),
+        ]);
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Skill updated successfully',
+            'data' => [
+                'id' => $skill->id,
+                'name' => $skill->name,
+            ],
+        ], Response::HTTP_OK);
+    }
+
+    public function destroy($id)
+    {
+        $skill = Skill::find($id);
+        if (!$skill) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Skill not found',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $skill->delete();
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Skill deleted successfully',
+        ], Response::HTTP_OK);
+    }
+
+}
