@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Work extends Model
 {
@@ -50,5 +51,14 @@ class Work extends Model
     public function workSkills(): BelongsToMany
     {
         return $this->belongsToMany(Skill::class, 'work_skill');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($work) {
+            if (!$work->uuid) {
+                $work->uuid = Str::uuid();
+            }
+        });
     }
 }
