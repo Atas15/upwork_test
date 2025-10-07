@@ -32,7 +32,7 @@ Route::prefix('v1/admin')
                 Route::controller(LocationController::class)
                     ->group(function () {
                         Route::get('index', 'index');
-                        Route::post('create', 'create');
+                        Route::post('create', 'store');
                         Route::post('update/{id}', 'update');
                         Route::delete('delete/{id}', 'destroy');
                     });
@@ -44,7 +44,7 @@ Route::prefix('v1/admin')
                 Route::controller(SkillController::class)
                     ->group(function () {
                         Route::get('index', 'index');
-                        Route::post('create', 'create');
+                        Route::post('create', 'store');
                         Route::post('update/{id}', 'update');
                         Route::delete('delete/{id}', 'destroy');
                     });
@@ -66,7 +66,7 @@ Route::prefix('v1/admin')
                     ->group(function () {
                         Route::get('index', 'index');
                         Route::post('create', 'store');
-                        Route::post('update/{work}', 'update');
+                        Route::post('update/{id}', 'update');
                         Route::delete('delete/{id}', 'destroy');
                     });
             });

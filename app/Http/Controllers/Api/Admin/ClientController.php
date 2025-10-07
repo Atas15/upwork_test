@@ -11,13 +11,22 @@ class ClientController extends Controller
 {
     public function index()
     {
+        $clients = Client::orderBy('id')
+            ->get()
+            ->transform(function ($obj) {
+                return [
+                    'id' => $obj->id,
+                    'location_id' => $obj->location_id,
+                    'first_name' => $obj->first_name,
+                    'last_name' => $obj->last_name,
+                    'avatar' => $obj->avatar,
+                    'username' => $obj->username,
+                ];
+            });
 
         return response()->json([
             'status' => 1,
-            'data' => [
-                'clients' => Client::with('location')
-                    ->get(),
-            ],
+            'data' => $clients,
         ], Response::HTTP_OK);
     }
 

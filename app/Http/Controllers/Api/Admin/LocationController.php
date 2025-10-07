@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Location;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -11,20 +12,36 @@ class LocationController extends Controller
 {
     public function index()
     {
+        $locations = Location::orderBy('name')
+            ->get()
+            ->transform(function ($obj) {
+                return [
+                    'id' => $obj->id,
+                    'name' => $obj->name,
+                ];
+            });
+
         return response()->json([
             'status' => 1,
-            'data' => [
-                'locations' => Location::get(),
-            ],
+            'data' => $locations,
         ], Response::HTTP_OK);
     }
 
-    public function create(Request $request)
+    public function store(Request $request)
     {
-
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Validation failed',
+                'errors'  => $validator->errors(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $validated = $validator->validated();
 
         $exists = Location::whereRaw('LOWER(name) = ?', [strtolower($validated['name'])])->first();
 
@@ -61,9 +78,19 @@ class LocationController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Validation failed',
+                'errors'  => $validator->errors(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $validated = $validator->validated();
 
         $exists = Location::whereRaw('LOWER(name) = ?', [strtolower($validated['name'])])
             ->where('id', '!=', $id)
@@ -96,7 +123,7 @@ class LocationController extends Controller
 
     public function destroy($id)
     {
-        $location = Location::find($id);
+        $location = Location::with(['clients', 'freelancers'])->find($id);
 
         if (!$location) {
             return response()->json([
@@ -105,19 +132,21 @@ class LocationController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        // Burada “hasMany ilişkisi var” mesajı gösteriyoruz.
-        // Gerçek kontrol yapılmıyor, sadece kullanıcıya hatırlatma.
+        $hasRelations = $location->clients()->exists() || $location->freelancers()->exists();
+
+        if ($hasRelations) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Cannot delete: This Location has related clients or freelancers.',
+            ], Response::HTTP_CONFLICT);
+        }
+
+        $location->delete();
+
         return response()->json([
             'status' => 1,
-            'message' => 'Warning: This Location model has hasMany relations defined.',
+            'message' => 'Location deleted successfully',
         ], Response::HTTP_OK);
-
-        // Eğer buna rağmen silmek istersen:
-        // $location->delete();
-        // return response()->json([
-        //     'status' => 1,
-        //     'message' => 'Location deleted successfully',
-        // ], Response::HTTP_OK);
     }
 
 
